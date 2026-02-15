@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRO Glass Clock</title>
+
+<style>
+
+/* ================= GLOBAL ================= */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
+    color:white;
+}
+
+/* ================= OCEAN BACKGROUND ================= */
+body::before{
+    content:"";
+    position:absolute;
+    width:100%;
+    height:100%;
+    background:url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e")
+    center/cover no-repeat;
+    z-index:-3;
+}
+
+/* waves */
+.wave{
+    position:absolute;
+    width:200%;
+    height:200%;
+    background:rgba(255,255,255,0.05);
+    border-radius:40%;
+    animation:waveMove 18s linear infinite;
+}
+
+.wave:nth-child(1){ bottom:-60%; left:-50%; }
+.wave:nth-child(2){
+    bottom:-65%;
+    left:-55%;
+    animation-duration:25s;
+}
+
+@keyframes waveMove{
+    from{ transform:rotate(0deg); }
+    to{ transform:rotate(360deg); }
+}
+
+/* mouse glow */
+.glow{
+    position:absolute;
+    width:300px;
+    height:300px;
+    background:radial-gradient(circle,
+        rgba(0,255,255,0.4),
+        transparent 70%);
+    pointer-events:none;
+    transform:translate(-50%,-50%);
+}
+
+/* ================= CLOCK ================= */
+.clock{
+    width:360px;
+    height:360px;
+    border-radius:50%;
+    position:relative;
+
+    background:rgba(255,255,255,0.15);
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,0.4);
+
+    box-shadow:
+        0 0 25px cyan,
+        inset 0 0 25px rgba(255,255,255,0.3);
+
+    animation:neon 4s ease-in-out infinite alternate;
+}
+
+@keyframes neon{
+    from{ box-shadow:0 0 20px cyan; }
+    to{ box-shadow:0 0 45px magenta; }
+}
+
+/* hands */
+.hand{
+    position:absolute;
+    bottom:50%;
+    left:50%;
+    transform-origin:bottom;
+    transform:translateX(-50%);
+    border-radius:10px;
+}
+
+.hour{height:80px;width:6px;background:white;}
+.minute{height:110px;width:4px;background:#eee;}
+.second{height:130px;width:2px;background:#ff2e63;}
+
+.center{
+    width:16px;
+    height:16px;
+    background:white;
+    border-radius:50%;
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+}
+
+/* numbers */
+.number{
+    position:absolute;
+    font-size:24px;
+    font-weight:bold;
+    text-shadow:0 0 10px white;
+}
+
+.n12{top:12px; left:50%; transform:translateX(-50%);}
+.n3{right:15px; top:50%; transform:translateY(-50%);}
+.n6{bottom:12px; left:50%; transform:translateX(-50%);}
+.n9{left:15px; top:50%; transform:translateY(-50%);}
+
+.black-number{
+    color:black;
+    text-shadow:none;
+}
+
+.n1{top:40px; right:85px;}
+.n2{top:85px; right:40px;}
+.n4{bottom:85px; right:40px;}
+.n5{bottom:40px; right:85px;}
+.n7{bottom:40px; left:85px;}
+.n8{bottom:85px; left:40px;}
+.n10{top:85px; left:40px;}
+.n11{top:40px; left:85px;}
+
+/* digital */
+.digital{
+    position:absolute;
+    bottom:-80px;
+    text-align:center;
+    width:100%;
+    font-size:22px;
+    text-shadow:0 0 10px cyan;
+}
+
+/* button */
+.toggle{
+    position:absolute;
+    top:20px;
+    right:20px;
+    padding:10px 16px;
+    border:none;
+    border-radius:20px;
+    background:rgba(255,255,255,0.2);
+    color:white;
+    backdrop-filter:blur(10px);
+    cursor:pointer;
+}
+
+.overlay{
+    position:absolute;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.35);
+    z-index:-2;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="overlay" id="overlay"></div>
+<div class="wave"></div>
+<div class="wave"></div>
+<div class="glow" id="glow"></div>
+
+<button class="toggle" onclick="toggleTheme()">Toggle Theme</button>
+
+<div class="clock">
+
+<div class="number n12">12</div>
+<div class="number n3">3</div>
+<div class="number n6">6</div>
+<div class="number n9">9</div>
+
+<div class="number black-number n1">1</div>
+<div class="number black-number n2">2</div>
+<div class="number black-number n4">4</div>
+<div class="number black-number n5">5</div>
+<div class="number black-number n7">7</div>
+<div class="number black-number n8">8</div>
+<div class="number black-number n10">10</div>
+<div class="number black-number n11">11</div>
+
+<div class="hand hour" id="hour"></div>
+<div class="hand minute" id="minute"></div>
+<div class="hand second" id="second"></div>
+
+<div class="center"></div>
+<div class="digital" id="digital"></div>
+
+</div>
+
+<!-- tick sound -->
+<audio id="tick">
+<source src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3">
+</audio>
+
+<!-- 🌊 SEA SOUND -->
+<audio id="sea" loop preload="auto">
+<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_5a4f7b6c59.mp3?filename=ocean-waves-ambient-110624.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+
+/* CLOCK */
+const hour=document.getElementById("hour");
+const minute=document.getElementById("minute");
+const second=document.getElementById("second");
+const digital=document.getElementById("digital");
+const tick=document.getElementById("tick");
+
+function updateClock(){
+
+const now=new Date();
+
+const s=now.getSeconds()+now.getMilliseconds()/1000;
+const m=now.getMinutes()+s/60;
+const h=now.getHours()%12+m/60;
+
+hour.style.transform=`translateX(-50%) rotate(${h*30}deg)`;
+minute.style.transform=`translateX(-50%) rotate(${m*6}deg)`;
+second.style.transform=`translateX(-50%) rotate(${s*6}deg)`;
+digital.innerHTML=
+now.toLocaleTimeString()+"<br>"+now.toDateString();
+
+tick.currentTime=0;
+tick.play().catch(()=>{});
+
+}
+
+setInterval(updateClock,40);
+
+/* THEME */
+const overlay=document.getElementById("overlay");
+
+function autoTheme(){
+const hr=new Date().getHours();
+overlay.style.background=
+(hr>=6&&hr<18)
+?"rgba(255,255,255,0.15)"
+:"rgba(0,0,0,0.45)";
+}
+autoTheme();
+
+function toggleTheme(){
+overlay.style.background=
+overlay.style.background.includes("0.45")
+?"rgba(255,255,255,0.15)"
+:"rgba(0,0,0,0.45)";
+}
+
+/* MOUSE GLOW */
+const glow=document.getElementById("glow");
+document.addEventListener("mousemove",e=>{
+glow.style.left=e.clientX+"px";
+glow.style.top=e.clientY+"px";
+});
+
+/* 🌊 SEA SOUND FIX (WORKS 100%) */
+const sea=document.getElementById("sea");
+
+function startSeaSound(){
+sea.volume=0.4;
+sea.play().catch(()=>{});
+
+window.removeEventListener("click",startSeaSound);
+window.removeEventListener("keydown",startSeaSound);
+window.removeEventListener("touchstart",startSeaSound);
+}
+
+window.addEventListener("click",startSeaSound);
+window.addEventListener("keydown",startSeaSound);
+window.addEventListener("touchstart",startSeaSound);
+
+</script>
+
+</body>
+</html>
